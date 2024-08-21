@@ -1,0 +1,5 @@
+Place settings.json in:
+%USERPROFILE%\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState
+
+Place Terminal Quake Mode in:
+%USERPROFILE%\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
