@@ -30,6 +30,7 @@ REM - Not everyone will want these settings
 REM - Give the option to bail out of the script here
 	echo This script has optional settings:
 	echo Installing Steam
+	echo Installing Discord
 	echo Z for PowerShell (Requires PowerShell 7)
 	echo Oh-My-Posh (Requires PowerShell 7)
 	echo My preconfigured Terminal settings (Requires PowerShell 7)
@@ -49,13 +50,26 @@ REM - Install Steam via Winget
 	set /p SteamInstall=Would you like to install Steam? (Y or N) 
 	if /I "%SteamInstall%"=="yes" goto Install_Steam
 	if /I "%SteamInstall%"=="y" goto Install_Steam
-	if /I "%SteamInstall%"=="no" goto Zprompt
-	if /I "%SteamInstall%"=="n" goto Zprompt
+	if /I "%SteamInstall%"=="no" goto DiscordPrompt
+	if /I "%SteamInstall%"=="n" goto DiscordPrompt
 	
 :Install_Steam
 winget install --id Valve.Steam -e  --accept-package-agreements
-goto Zprompt
+goto DiscordPrompt
 	
+:DiscordPrompt
+REM - Install Discord via Winget
+	set DiscordInstall="n"
+	set /p DiscordInstall=Would you like to install Discord? (Y or N) 
+	if /I "%DiscordInstall%"=="yes" goto Install_Discord
+	if /I "%DiscordInstall%"=="y" goto Install_Discord
+	if /I "%DiscordInstall%"=="no" goto Zprompt
+	if /I "%DiscordInstall%"=="n" goto Zprompt
+	
+:Install_Discord
+winget install --id Discord.Discord -e  --accept-package-agreements
+goto Zprompt
+
 :Zprompt
 REM - Install Z prompt
 	set Zshell="n"
