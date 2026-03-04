@@ -16,16 +16,6 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManage
 # Chocolatey requires refreshing the shell and environment variables in order to function
 $Env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 
-# Part 3: Installing packages via Chocolatey
-# This section cats the packages.txt into an array
-# It's very important to ensure packages.txt is formatted correctly:
-# Each package should be listed on its own line
-$Packages = @(Get-Content .\packages.txt)
-foreach ($Package in $Packages)
-{
-  choco install $Package -y
-}
-
 # Schedule Chocolatey Daily Upgrades
 # Copy Chocolatey Upgrade Scripts to User Folder to be Scheduled
 Copy-Item -Path '.\Tools\ChocolateyUpgrade.ps1' -Destination '$env:USERPROFILE\Scripts'

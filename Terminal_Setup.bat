@@ -21,16 +21,25 @@ goto Prompt
 	if /I "%pack%"=="n" goto NoPackages
 
 :Script
-
+REM - This part of the script allows PowerShell to run scripts, then installs Chocolatey
 powershell.exe -ExecutionPolicy Bypass -Command "%~dp0Terminal_Setup.ps1"
+goto Install_Packages
+
+:Install_Packages
+REM - This part of the script installs Chocolatey packages
+REM - This was separated from the main script because running Chocolatey from the same window that installed it leads to this script breaking
+REM - Stop trying to have everything run in one script, it always breaks!
+powershell.exe -ExecutionPolicy Bypass -Command "%~dp0Terminal_Setup_Packages.ps1"
 goto OptionalSettings
 
 :OptionalSettings
 REM - Not everyone will want these settings
 REM - Give the option to bail out of the script here
 	echo This script has optional settings:
+	echo Installing UniGetUI
 	echo Installing Steam
 	echo Installing Discord
+	echo Installing Winaero Tweaker
 	echo Z for PowerShell (Requires PowerShell 7)
 	echo Oh-My-Posh (Requires PowerShell 7)
 	echo My preconfigured Terminal settings (Requires PowerShell 7)
@@ -39,13 +48,27 @@ REM - Give the option to bail out of the script here
 	echo Choosing not to select optional settings will end the script.
 	set Optional="n"
 	set /p Optional=Would you like to select optional settings? (Y or N) 
-	if /I "%Optional%"=="yes" goto SteamPrompt
-	if /I "%Optional%"=="y" goto SteamPrompt
+	if /I "%Optional%"=="yes" goto UniGetUIPrompt
+	if /I "%Optional%"=="y" goto UniGetUIPrompt
 	if /I "%Optional%"=="no" goto End
 	if /I "%Optional%"=="n" goto End
 
+:UniGetUIPrompt
+REM - Ask to install UniGetUI (GUI for maintaining package managers on the PC)
+	set UniGetUIInstall="n"
+	set /p UniGetUIInstall=Would you like to install UniGetUI? (Y or N) 
+	if /I "%UniGetUIInstall%"=="yes" goto Install_UniGetUI
+	if /I "%UniGetUIInstall%"=="y" goto Install_UniGetUI
+	if /I "%UniGetUIInstall%"=="no" goto SteamPrompt
+	if /I "%UniGetUIInstall%"=="n" goto SteamPrompt
+	
+:Install_UniGetUI
+REM - Install Steam via Winget because Steam updates itself on startup
+winget install --id MartiCliment.UniGetUI -e --accept-package-agreements
+goto SteamPrompt
+
 :SteamPrompt
-REM - Install Steam via Winget
+REM - Ask to install Steam
 	set SteamInstall="n"
 	set /p SteamInstall=Would you like to install Steam? (Y or N) 
 	if /I "%SteamInstall%"=="yes" goto Install_Steam
@@ -54,24 +77,40 @@ REM - Install Steam via Winget
 	if /I "%SteamInstall%"=="n" goto DiscordPrompt
 	
 :Install_Steam
+REM - Install Steam via Winget because Steam updates itself on startup
 winget install --id Valve.Steam -e  --accept-package-agreements
 goto DiscordPrompt
 	
 :DiscordPrompt
-REM - Install Discord via Winget
+REM - Ask to install Discord
 	set DiscordInstall="n"
 	set /p DiscordInstall=Would you like to install Discord? (Y or N) 
 	if /I "%DiscordInstall%"=="yes" goto Install_Discord
 	if /I "%DiscordInstall%"=="y" goto Install_Discord
-	if /I "%DiscordInstall%"=="no" goto Zprompt
-	if /I "%DiscordInstall%"=="n" goto Zprompt
+	if /I "%DiscordInstall%"=="no" goto WinaeroPrompt
+	if /I "%DiscordInstall%"=="n" goto WinaeroPrompt
 	
 :Install_Discord
+REM - Install Discord via Winget because Discord updates itself on startup
 winget install --id Discord.Discord -e  --accept-package-agreements
+goto WinaeroPrompt
+
+:WinaeroPrompt
+REM - Ask to install Winaero Tweaker
+	set WinaeroInstall="n"
+	set /p WinaeroInstall=Would you like to install Winaero Tweaker? (Y or N) 
+	if /I "%WinaeroInstall%"=="yes" goto Install_Winaero
+	if /I "%WinaeroInstall%"=="y" goto Install_Winaero
+	if /I "%WinaeroInstall%"=="no" goto Zprompt
+	if /I "%WinaeroInstall%"=="n" goto Zprompt
+	
+:Install_Winaero
+REM - Install Winaero Tweaker via Winget because Chocolatey doesn't do it right
+winget install --id winaero.tweaker -e  --accept-package-agreements
 goto Zprompt
 
 :Zprompt
-REM - Install Z prompt
+REM - Ask to install Z for PowerShell (Helps navigate the file system via Terminal)
 	set Zshell="n"
 	set /p Zshell=Would you like to install Z for PowerShell? (Y or N) 
 	if /I "%Zshell%"=="yes" goto Install_Z
@@ -80,12 +119,13 @@ REM - Install Z prompt
 	if /I "%Zshell%"=="n" goto PoshPrompt
 
 :Install_Z
+REM - Install Z from PowerShell module store
 pwsh.exe -Command "Install-Module z -AllowClobber"
 pwsh.exe -Command "echo 'Import-Module z' | Out-File $PROFILE -append -Encoding utf8"
 goto PoshPrompt
 
 :PoshPrompt
-REM - Install Oh-My-Posh
+REM - Ask to install Oh-My-Posh (PowerShell terminal customizations)
 	set Posh="n"
 	set /p Posh=Would you like to install Oh-My-Posh for PowerShell? (Y or N) 
 	if /I "%Posh%"=="yes" goto Install_Posh
@@ -94,9 +134,9 @@ REM - Install Oh-My-Posh
 	if /I "%Posh%"=="n" goto TerminalPrompt
 
 :Install_Posh
-REM - Install nerd fonts for Oh-My-Posh
+REM - Install Firacode nerd font for Oh-My-Posh
 pwsh.exe -Command "%~dp0Tools\Firacode_Installer.ps1"
-REM - Install Oh-My-Posh
+REM - Install Oh-My-Posh via Winget
 pwsh.exe -Command "winget install JanDeDobbeleer.OhMyPosh -s winget"
 pwsh.exe -Command "Copy-Item -Path '.\Tools\kaliwin.omp.json' -Destination '$env:POSH_THEMES_PATH\kaliwin.omp.json'"
 pwsh.exe -Command "Get-Content '.\Tools\Posh_Profile.txt' | Out-File $PROFILE -append -Encoding utf8"
